@@ -1,4 +1,4 @@
-import ApolloClient, {InMemoryCache} from 'apollo-boost'
+import ApolloClient from 'apollo-boost'
 import {ApolloProvider} from 'react-apollo'
 
 //components
@@ -7,8 +7,7 @@ import AddBook from "./components/AddBook";
 
 //apollo client setup
 const client = new ApolloClient({
-    uri: 'http://localhost:4000/graphql',
-    cache: new InMemoryCache()
+    uri: 'http://localhost:4000/graphql'
 });
 
 function App() {
