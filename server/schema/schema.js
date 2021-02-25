@@ -1,10 +1,28 @@
  const graphql = require('graphql');
 //lodash
 const _ = require('lodash');
+//express js models
 const Book = require('./models/book');
 const Author = require('./models/author');
 
 const {GraphQLObjectType,GraphQLString,GraphQLSchema, GraphQLID, GraphQLInt, GraphQLList} = graphql;
+
+ //book type
+ const BookType = new GraphQLObjectType({
+     name: 'Book',
+     fields: () => ({
+         id: { type: GraphQLID},
+         title: {type: GraphQLString},
+         genre: {type: GraphQLString},
+         author: {
+             type: AuthorType,
+             resolve(parent, args){
+                 // return _.find(authors,{id: parent.authorId})
+                 return Author.findById(parent.authorId)
+             }
+         }
+     })
+ });
 
 
 // author type
@@ -18,27 +36,12 @@ const AuthorType = new GraphQLObjectType({
             type: new GraphQLList(BookType),
             resolve(parent, args){
                 // return _.filter(books, { authorId: parent.id})
+                return Book.find({authorId: parent.id})
             }
         }
     })
 });
 
-
-//book type
-const BookType = new GraphQLObjectType({
-   name: 'Book',
-   fields: () => ({
-       id: { type: GraphQLID},
-       name: {type: GraphQLString},
-       genre: {type: GraphQLString},
-       author: {
-           type: AuthorType,
-           resolve(parent, args){
-               // return _.find(authors,{id: parent.authorId})
-           }
-       }
-   })
-});
 
 
 // root query (how we initially jump into the graph to query data)
@@ -51,6 +54,7 @@ const RootQuery = new GraphQLObjectType({
             resolve(parent, args){
                 // code to get data from db/other sources
                 // return _.find(books, {id:args.id});
+                return Book.findById(args.id)
             }
         },
         author: {
@@ -58,6 +62,7 @@ const RootQuery = new GraphQLObjectType({
             args: {id: {type: GraphQLID}},
             resolve(parent, args) {
                 // return _.find(authors, {id:args.id});
+                return Author.findById(args.id)
             }
         },
         //get all books
@@ -65,6 +70,7 @@ const RootQuery = new GraphQLObjectType({
             type: new GraphQLList(BookType),
             resolve(parent, args){
                 // return books
+                return Book.find({})
             }
         },
         //get all authors
@@ -72,12 +78,51 @@ const RootQuery = new GraphQLObjectType({
             type: new GraphQLList(AuthorType),
             resolve(parent,args){
                 // return authors
+                return Author.find({})
             }
         }
     }
 });
 
+// Mutations -  what data can be changed(deleted, added)
+ const Mutation = new GraphQLObjectType({
+     name: 'Mutation',
+     fields: () => ({
+         addAuthor:{
+             type: AuthorType,
+             args: {
+                 name: {type: GraphQLString},
+                 age: {type: GraphQLInt}
+             },
+             resolve(parent, args){
+                 let author = new Author({
+                     name: args.name,
+                     age: args.age
+                 });
+                 return author.save();
+             }
+         },
+         addBook: {
+             type: BookType,
+             args: {
+                 title: {type:GraphQLString},
+                 genre: {type:GraphQLString},
+                 authorId: {type: GraphQLID}
+             },
+             resolve(parent, args){
+                 let book = new Book({
+                     title: args.title,
+                     genre: args.genre,
+                     authorId: args.authorId
+                 });
+                 return book.save();
+             }
+         }
+     })
+ });
+
 
 module.exports = new GraphQLSchema({
-   query: RootQuery
+   query: RootQuery,
+    mutation: Mutation
 });
