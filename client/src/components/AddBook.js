@@ -12,7 +12,13 @@ const AddBook = (props) => {
 
     const handleSubmit = (e) => {
       e.preventDefault();
-      props.addBookMutation();
+      props.addBookMutation({
+          variables: {
+              title,
+              genre,
+              authorId
+          }
+      });
         // const book = { title, genre, authorId }
       // console.log(book)
     };
@@ -29,7 +35,7 @@ const AddBook = (props) => {
               )
             })
         }
-    }
+    };
 
     return (
         <form id="add-book" onSubmit={handleSubmit}>
