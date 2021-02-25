@@ -22,6 +22,10 @@ const AddBook = (props) => {
               query: getBooksQuery
           }]
       });
+        setTitle('');
+        setGenre('');
+        setAuthorId('');
+
         // const book = { title, genre, authorId }
       // console.log(book)
     };
